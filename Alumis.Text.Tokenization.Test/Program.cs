@@ -7,7 +7,7 @@ namespace Alumis.Text.Tokenization.Test
     {
         static void Main(string[] args)
         {
-            var text = new Text("this is a test. and this is a test.");
+            var text = new TokenizedText("this is a test. and this is a test.");
 
             foreach (var s in text.Sentences)
             {

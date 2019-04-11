@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Alumis.Text.Tokenization
 {
-    public class Text
+    public class TokenizedText
     {
-        public Text(GraphemeString graphemeString)
+        public TokenizedText(GraphemeString graphemeString)
         {
             var head = Head = Token.Tokenize(GraphemeString = graphemeString);
 
