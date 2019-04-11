@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Authors>Emil Müller</Authors>
+    <Company>Alumis AS</Company>
+    <Description>Text tokenization based on Unicode grapheme clustering, and the XID_Start and XID_Continue binary properties.</Description>
+    <Copyright>Alumis AS 2019</Copyright>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/alumis/Alumis.Text.Tokenization/master/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/alumis/Alumis.Text.Tokenization</RepositoryUrl>
+    <PackageTags>text tokenization unicode</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Alumis.Text.Unicode" Version="1.0.8" />
+  </ItemGroup>
+
+</Project>
