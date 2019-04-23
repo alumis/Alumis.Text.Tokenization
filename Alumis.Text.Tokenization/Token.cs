@@ -151,7 +151,7 @@ namespace Alumis.Text.Tokenization
 
                         if (codePoint != 0)
                         {
-                            prev = prev.Next = new TokenNode(new Token(TokenType.Emoji, codePoint, new TokenInterval(j, i = k))) { Previous = prev };
+                            prev = prev.Next = new TokenNode(new Token(TokenType.Emoji, (uint)codePoint, new TokenInterval(j, i = k))) { Previous = prev };
                             continue;
                         }
 
@@ -163,19 +163,25 @@ namespace Alumis.Text.Tokenization
                     }
                 }
 
-                if (enumerator.Current.Length == 1 && Emoji.Emojis.Contains(enumerator.Current[0]))
+                // In Unicode the value U+FE0F is called a variation selector.
+                // The variation selector in the case of emoji is to tell the system rendering the character how it should treat the value.
+                // That is, whether it should be treated as text, or as an image which could have additional properties, like color or animation.
+
+                // For emoji there are two different variation selectors that can be applied, U+FE0E and U+FE0F.
+
+                if (Emoji.Emojis.Contains(enumerator.Current[0]))
                 {
-                    AppendToken(TokenType.Emoji, (int)enumerator.Current[0]);
+                    AppendToken(TokenType.Emoji, (uint)enumerator.Current[0]);
                     continue;
                 }
 
-                if (enumerator.Current.Length == 2 && char.IsHighSurrogate(enumerator.Current[0]) && char.IsLowSurrogate(enumerator.Current[1]))
+                if (2 <= enumerator.Current.Length && char.IsHighSurrogate(enumerator.Current[0]) && char.IsLowSurrogate(enumerator.Current[1]))
                 {
                     var codePoint = char.ConvertToUtf32(enumerator.Current[0], enumerator.Current[1]);
 
-                    if (Emoji.Emojis.Contains(codePoint))
+                    if (Emoji.Emojis.Contains((uint)codePoint))
                     {
-                        AppendToken(TokenType.Emoji, codePoint);
+                        AppendToken(TokenType.Emoji, (uint)codePoint);
                         continue;
                     }
                 }
@@ -375,6 +381,12 @@ namespace Alumis.Text.Tokenization
                     case ".":
                         AppendToken(TokenType.FullStop, ".");
                         continue;
+                    case "?":
+                        AppendToken(TokenType.QuestionMark, ".");
+                        continue;
+                    case "!":
+                        AppendToken(TokenType.ExclamationPoint, ".");
+                        continue;
                     case "-":
                         {
                             var position = enumerator.Position;
@@ -407,20 +419,6 @@ namespace Alumis.Text.Tokenization
                     case "\u2212":
                         AppendToken(TokenType.Minus, "\u2212");
                         continue;
-                    case "!":
-                        {
-                            var position = enumerator.Position;
-
-                            if (enumerator.MoveNext() && enumerator.Current == "=")
-                            {
-                                AppendToken(TokenType.NotEqual, "!=", 2);
-                                continue;
-                            }
-
-                            enumerator.Position = position;
-                            AppendToken(TokenType.Not, "!");
-                            continue;
-                        }
                     case "¬":
                         AppendToken(TokenType.Not, "¬");
                         continue;

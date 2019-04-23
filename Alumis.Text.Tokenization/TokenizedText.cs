@@ -14,7 +14,7 @@ namespace Alumis.Text.Tokenization
 
             for (TokenNode start = tokenRange.Start, node = tokenRange.Start; ;)
             {
-                if (node.Value.Type == TokenType.FullStop)
+                if (node.Value.Type == TokenType.FullStop || node.Value.Type == TokenType.QuestionMark || node.Value.Type == TokenType.ExclamationPoint)
                 {
                     for (node = node.Next; node.Value.Type == TokenType.FullStop; node = node.Next) ;
                     Sentences.Add(new TokenizedSentence(new TokenRange(start, node)));

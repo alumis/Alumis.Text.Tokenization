@@ -19,6 +19,8 @@ namespace Alumis.Text.Tokenization
         OpeningBrace,
         ClosingBrace,
         FullStop,
+        QuestionMark,
+        ExclamationPoint,
         RightArrow,
         Underscore,
 

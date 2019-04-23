@@ -10,7 +10,7 @@ namespace Alumis.Text.Tokenization
         public static Dictionary<string, uint> EmoticonToEmoji = new Dictionary<string, uint>();
         public static Dictionary<string, (uint CodePoint, bool IsPartial)> EmoticonToEmojiIndex = new Dictionary<string, (uint CodePoint, bool IsPartial)>();
 
-        public static HashSet<int> Emojis = new HashSet<int>();
+        public static HashSet<uint> Emojis = new HashSet<uint>();
 
         static Emoji()
         {
