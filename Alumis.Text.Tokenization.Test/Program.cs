@@ -7,14 +7,14 @@ namespace Alumis.Text.Tokenization.Test
     {
         static void Main(string[] args)
         {
-            var text = new TokenizedText("this is a test. and this is a test.");
+            var text = new TokenizedText("dette er en adm.dir.test. og dette er en test.", "nor");
 
             foreach (var s in text.Sentences)
             {
-                var startIndex = s.Head.Next.Value.Interval.Index;
-                var endIndex = s.Tail.Previous.Value.Interval.IndexUpper;
+                Console.WriteLine("SENTENCE");
 
-                Console.WriteLine(text.GraphemeString.Substring(startIndex, endIndex - startIndex));
+                foreach (var n in s.TokenRange)
+                    Console.WriteLine(text.GraphemeString.Substring(n.Value.Interval.Index, n.Value.Interval.Length));
             }
 
             Console.Read();

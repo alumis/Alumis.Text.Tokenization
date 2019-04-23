@@ -11,7 +11,7 @@
     <PackageLicenseUrl>https://raw.githubusercontent.com/alumis/Alumis.Text.Tokenization/master/LICENSE</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/alumis/Alumis.Text.Tokenization</RepositoryUrl>
     <PackageTags>text tokenization unicode</PackageTags>
-    <Version>1.0.1</Version>
+    <Version>1.0.4</Version>
   </PropertyGroup>
 
   <ItemGroup>

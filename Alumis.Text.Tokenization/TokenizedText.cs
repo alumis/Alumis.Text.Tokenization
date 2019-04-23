@@ -7,24 +7,25 @@ namespace Alumis.Text.Tokenization
 {
     public class TokenizedText
     {
-        public TokenizedText(GraphemeString graphemeString)
+        public TokenizedText(GraphemeString graphemeString, TokenRange tokenRange)
         {
-            var head = Head = Token.Tokenize(GraphemeString = graphemeString);
+            GraphemeString = graphemeString;
+            TokenRange = tokenRange;
 
-            for (var node = head.Next; ;)
+            for (TokenNode start = tokenRange.Start, node = tokenRange.Start; ;)
             {
                 if (node.Value.Type == TokenType.FullStop)
                 {
                     for (node = node.Next; node.Value.Type == TokenType.FullStop; node = node.Next) ;
-                    Sentences.Add(new TokenizedSentence(head, node));
-                    head = node.Previous;
+                    Sentences.Add(new TokenizedSentence(new TokenRange(start, node)));
+                    start = node;
                     continue;
                 }
 
                 if (node.Value.Type == TokenType.Eof)
                 {
-                    if (head.Next != node)
-                        Sentences.Add(new TokenizedSentence(head, node));
+                    if (start != node)
+                        Sentences.Add(new TokenizedSentence(new TokenRange(start, node)));
 
                     break;
                 }
@@ -33,8 +34,12 @@ namespace Alumis.Text.Tokenization
             }
         }
 
+        public TokenizedText(GraphemeString graphemeString, string iso639Identifier = null) : this(graphemeString, Token.Tokenize(graphemeString, iso639Identifier))
+        {
+        }
+
         public GraphemeString GraphemeString;
-        public TokenNode Head;
+        public TokenRange TokenRange;
         public List<TokenizedSentence> Sentences = new List<TokenizedSentence>();
     }
 }

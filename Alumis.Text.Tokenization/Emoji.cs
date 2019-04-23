@@ -7,8 +7,8 @@ namespace Alumis.Text.Tokenization
 {
     static class Emoji
     {
-        public static Dictionary<string, int> EmoticonToEmoji = new Dictionary<string, int>();
-        public static Dictionary<string, (int CodePoint, bool IsPartial)> EmoticonToEmojiIndex = new Dictionary<string, (int CodePoint, bool IsPartial)>();
+        public static Dictionary<string, uint> EmoticonToEmoji = new Dictionary<string, uint>();
+        public static Dictionary<string, (uint CodePoint, bool IsPartial)> EmoticonToEmojiIndex = new Dictionary<string, (uint CodePoint, bool IsPartial)>();
 
         public static HashSet<int> Emojis = new HashSet<int>();
 
@@ -1023,7 +1023,7 @@ namespace Alumis.Text.Tokenization
 
             EmoticonToEmoji["=#"] = 0x1f636;
 
-            (int CodePoint, bool IsPartial) entry;
+            (uint CodePoint, bool IsPartial) entry;
 
             foreach (var p in EmoticonToEmoji)
             {

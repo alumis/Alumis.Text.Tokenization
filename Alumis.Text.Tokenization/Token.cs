@@ -2,6 +2,7 @@
 using Alumis.Text.Unicode;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -25,24 +26,38 @@ namespace Alumis.Text.Tokenization
             switch (Type)
             {
                 case TokenType.Emoji:
-                    return "<emoji>";
+                    return ((uint)Value).ToString("X") + ", Emoji";
                 case TokenType.Uri:
-                    return $"<uri {(string)Value}>";
+                    return (string)Value + ", URI";
                 case TokenType.Email:
-                    return $"<email {(string)Value}>";
+                    return (string)Value + ", E-mail";
                 case TokenType.Newline:
-                    return "<newline>";
+                    return string.Join(" + ", ((string)Value).Select(c => ((int)c).ToString("X"))) + ", Newline";
             }
 
-            return Value.ToString();
+            return (string)Value;
         }
 
         static Regex _uriRegex = new Regex(@"((http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?)", RegexOptions.IgnoreCase);
         static Regex _emailRegex = new Regex(@"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,6}", RegexOptions.IgnoreCase);
 
-        public static TokenNode Tokenize(GraphemeString graphemeString)
+        public static TokenRange Tokenize(GraphemeString graphemeString, string iso639Identifier = null)
         {
-            var head = new TokenNode(new Token(TokenType.Eof, null, new TokenInterval(0, 0)));
+            Dictionary<string, (bool IsTerminal, bool IsPartial)> exceptionsIndex = null;
+
+            switch (iso639Identifier)
+            {
+                case "nob":
+                case "nno":
+                case "nor":
+                    exceptionsIndex = Norwegian.TokenizerExceptionsIndex;
+                    break;
+
+                case "eng": // TODO
+                    break;
+            }
+
+            var head = new TokenNode(new Token(TokenType.Eof, null, new TokenInterval(-1, 0)));
             var prev = head;
 
             var enumerator = new GraphemeStringEnumerator(graphemeString);
@@ -83,67 +98,68 @@ namespace Alumis.Text.Tokenization
                     continue;
                 }
 
-
-                if (Emoji.EmoticonToEmojiIndex.TryGetValue(enumerator.Current, out (int CodePoint, bool IsPartial) entry))
                 {
-                    var position = enumerator.Position;
-                    var current = enumerator.Current;
-                    var j = i++;
-
-                    int codePoint;
-
-                    int k;
-
-                    if (entry.CodePoint != 0)
+                    if (Emoji.EmoticonToEmojiIndex.TryGetValue(enumerator.Current, out (uint CodePoint, bool IsPartial) entry))
                     {
-                        codePoint = entry.CodePoint;
-                        k = i;
-                    }
+                        var position = enumerator.Position;
+                        var current = enumerator.Current;
+                        var j = i++;
 
-                    else
-                    {
-                        codePoint = 0;
-                        k = 0;
-                    }
+                        uint codePoint;
 
-                    var str = enumerator.Current;
+                        int k;
 
-                    while (entry.IsPartial && enumerator.MoveNext())
-                    {
-                        ++i;
-
-                        var test = str + enumerator.Current;
-
-                        if (Emoji.EmoticonToEmojiIndex.TryGetValue(test, out entry))
+                        if (entry.CodePoint != 0)
                         {
-                            if (entry.CodePoint != 0)
-                            {
-                                position = enumerator.Position;
-                                codePoint = entry.CodePoint;
-                                k = i;
-                            }
-
-                            if (!entry.IsPartial)
-                                break;
+                            codePoint = entry.CodePoint;
+                            k = i;
                         }
 
-                        else break;
+                        else
+                        {
+                            codePoint = 0;
+                            k = 0;
+                        }
 
-                        str = test;
-                    }
+                        var str = enumerator.Current;
 
-                    enumerator.Position = position;
+                        while (entry.IsPartial && enumerator.MoveNext())
+                        {
+                            ++i;
 
-                    if (codePoint != 0)
-                    {
-                        prev = prev.Next = new TokenNode(new Token(TokenType.Emoji, codePoint, new TokenInterval(j, i = k))) { Previous = prev };
-                        continue;
-                    }
+                            var test = str + enumerator.Current;
 
-                    else
-                    {
-                        enumerator.Current = current;
-                        i = j;
+                            if (Emoji.EmoticonToEmojiIndex.TryGetValue(test, out entry))
+                            {
+                                if (entry.CodePoint != 0)
+                                {
+                                    position = enumerator.Position;
+                                    codePoint = entry.CodePoint;
+                                    k = i;
+                                }
+
+                                if (!entry.IsPartial)
+                                    break;
+                            }
+
+                            else break;
+
+                            str = test;
+                        }
+
+                        enumerator.Position = position;
+
+                        if (codePoint != 0)
+                        {
+                            prev = prev.Next = new TokenNode(new Token(TokenType.Emoji, codePoint, new TokenInterval(j, i = k))) { Previous = prev };
+                            continue;
+                        }
+
+                        else
+                        {
+                            enumerator.Current = current;
+                            i = j;
+                        }
                     }
                 }
 
@@ -161,6 +177,71 @@ namespace Alumis.Text.Tokenization
                     {
                         AppendToken(TokenType.Emoji, codePoint);
                         continue;
+                    }
+                }
+
+                {
+                    if (exceptionsIndex != null && exceptionsIndex.TryGetValue(enumerator.Current, out (bool IsTerminal, bool IsPartial) entry))
+                    {
+                        var position = enumerator.Position;
+                        var current = enumerator.Current;
+                        var j = i++;
+
+                        string identifier;
+
+                        int k;
+
+                        if (entry.IsTerminal)
+                        {
+                            identifier = current;
+                            k = i;
+                        }
+
+                        else
+                        {
+                            identifier = null;
+                            k = 0;
+                        }
+
+                        var str = enumerator.Current;
+
+                        while (entry.IsPartial && enumerator.MoveNext())
+                        {
+                            ++i;
+
+                            var test = str + enumerator.Current;
+
+                            if (exceptionsIndex.TryGetValue(test, out entry))
+                            {
+                                if (entry.IsTerminal)
+                                {
+                                    position = enumerator.Position;
+                                    identifier = test;
+                                    k = i;
+                                }
+
+                                if (!entry.IsPartial)
+                                    break;
+                            }
+
+                            else break;
+
+                            str = test;
+                        }
+
+                        enumerator.Position = position;
+
+                        if (identifier != null)
+                        {
+                            prev = prev.Next = new TokenNode(new Token(TokenType.Identifier, identifier, new TokenInterval(j, i = k))) { Previous = prev };
+                            continue;
+                        }
+
+                        else
+                        {
+                            enumerator.Current = current;
+                            i = j;
+                        }
                     }
                 }
 
@@ -503,9 +584,9 @@ namespace Alumis.Text.Tokenization
                 prev = prev.Next = new TokenNode(new Token(TokenType.Identifier, enumerator.Current, new TokenInterval(i, ++i))) { Previous = prev };
             }
 
-            prev.Next = new TokenNode(new Token(TokenType.Eof, null, new TokenInterval(i, 0))) { Previous = prev };
+            var tail = prev.Next = new TokenNode(new Token(TokenType.Eof, null, new TokenInterval(i, -1))) { Previous = prev };
 
-            return head;
+            return new TokenRange(head.Next, tail);
         }
     }
 }

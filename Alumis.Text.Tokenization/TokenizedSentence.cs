@@ -6,12 +6,11 @@ namespace Alumis.Text.Tokenization
 {
     public class TokenizedSentence
     {
-        public TokenizedSentence(TokenNode head, TokenNode tail)
+        public TokenizedSentence(TokenRange tokenRange)
         {
-            Head = head;
-            Tail = tail;
+            TokenRange = tokenRange;
         }
 
-        public TokenNode Head, Tail;
+        public TokenRange TokenRange;
     }
 }

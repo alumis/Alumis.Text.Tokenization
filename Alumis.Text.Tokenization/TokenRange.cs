@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Alumis.Text.Tokenization
 {
-    struct TokenRange : IEnumerable<TokenNode>
+    public struct TokenRange : IEnumerable<TokenNode>
     {
         public TokenNode Start, Tail;
 
